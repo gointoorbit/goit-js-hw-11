@@ -12,6 +12,7 @@ const gallery = document.querySelector('.gallery');
 let searchValue;
 let pageNumber = 1;
 let numberOfPages;
+let photosArray;
 
 const fetchPhotos = async event => {
   event.preventDefault();
