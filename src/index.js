@@ -12,7 +12,6 @@ const gallery = document.querySelector('.gallery');
 let searchValue;
 let pageNumber = 1;
 let numberOfPages;
-let photosArray;
 
 const fetchPhotos = async event => {
   event.preventDefault();
@@ -28,19 +27,25 @@ const fetchPhotos = async event => {
     per_page: 40,
     page: pageNumber,
   });
-  const response = await axios.get(`https://pixabay.com/api/?${searchParams}`);
-  photosArray = response.data.hits;
-  if (photosArray.length >= 1) {
-    Notify.success(`Hooray! We found ${response.data.totalHits} images.`);
-    pageNumber += 1;
-    numberOfPages = Math.ceil(response.data.totalHits / 40);
-    renderGallery(photosArray);
-    // buttonWrapper.classList.remove('invisible');
-    return { searchValue, pageNumber, numberOfPages };
-  } else {
-    Notify.failure(
-      'Sorry, there are no images matching your search query. Please try again.'
+  try {
+    const response = await axios.get(
+      `https://pixabay.com/api/?${searchParams}`
     );
+    const photosArray = response.data.hits;
+    if (photosArray.length >= 1) {
+      Notify.success(`Hooray! We found ${response.data.totalHits} images.`);
+      pageNumber += 1;
+      numberOfPages = Math.ceil(response.data.totalHits / 40);
+      renderGallery(photosArray);
+      // buttonWrapper.classList.remove('invisible');
+      return { searchValue, pageNumber, numberOfPages };
+    } else {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    }
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -56,37 +61,41 @@ const renderGallery = photosArray => {
 };
 
 const fetchMorePhotos = async event => {
-  if (pageNumber <= numberOfPages) {
-    let searchParams = new URLSearchParams({
-      key: '40029765-d3979f765e8685f4729db0a6b',
-      q: searchValue,
-      image_type: 'photo',
-      orientation: 'horizontal',
-      safesearch: true,
-      per_page: 40,
-      page: pageNumber,
-    });
-    const response = await axios.get(
-      `https://pixabay.com/api/?${searchParams}`
-    );
-    pageNumber += 1;
-    photosArray = response.data.hits;
-    renderGallery(photosArray);
+  try {
+    if (pageNumber <= numberOfPages) {
+      let searchParams = new URLSearchParams({
+        key: '40029765-d3979f765e8685f4729db0a6b',
+        q: searchValue,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        safesearch: true,
+        per_page: 40,
+        page: pageNumber,
+      });
+      const response = await axios.get(
+        `https://pixabay.com/api/?${searchParams}`
+      );
+      pageNumber += 1;
+      const photosArray = response.data.hits;
+      renderGallery(photosArray);
 
-    const { height: cardHeight } = document
-      .querySelector('.gallery')
-      .firstElementChild.getBoundingClientRect();
+      const { height: cardHeight } = document
+        .querySelector('.gallery')
+        .firstElementChild.getBoundingClientRect();
 
-    window.scrollBy({
-      top: cardHeight * 2,
-      behavior: 'smooth',
-    });
+      window.scrollBy({
+        top: cardHeight * 2,
+        behavior: 'smooth',
+      });
 
-    return pageNumber;
-  } else {
-    Notify.failure(
-      "We're sorry, but you've reached the end of search results."
-    );
+      return pageNumber;
+    } else {
+      Notify.failure(
+        "We're sorry, but you've reached the end of search results."
+      );
+    }
+  } catch (error) {
+    console.log(error);
   }
 };
 
